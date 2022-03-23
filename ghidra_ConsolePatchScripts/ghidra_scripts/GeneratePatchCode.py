@@ -27,7 +27,7 @@ def gen_patch():
         minAddr   = str(currentProgram.getMinAddress())
         codeUnits = listing.getCodeUnits(addrSet, True)
 
-        if processor.startswith('PowerPC:BE:64:64-32addr' or 'PowerPC:BE:64:A2-32addr'): # PS3
+        if processor.startswith('PowerPC:BE:64:64-32addr') or ('PowerPC:BE:64:A2-32addr'): # PS3
             print('Platform is PS3.')
             for codeUnit in codeUnits:
                 print('- [ be32, 0x{0}, 0x{1} ] # {2}'.format(codeUnit.getAddress(), hexlify(codeUnit.getBytes()), codeUnit.toString()))
@@ -47,10 +47,10 @@ def gen_patch():
                     print('- [ bytes, 0x{0}, \"{1:<20}\" ] # {2}'.format(codeUnit.getAddress(), hexlify(codeUnit.getBytes()), codeUnit.toString()))
                     # align to left with spaces if less than 20 chars
             else:
-                print('Image Base {} is not correct, patch address will be wrong! Make sure it is set to 0x400000.'.format(minAddr))
+                print('Image Base {} is not correct, patch address will be wrong! Make sure it is set to 0x400000.\nExiting script.'.format(minAddr))
                 return
         else:
-            print('Processor not supported!\nExiting script.')
+            print('Processor: {} is not supported!\nExiting script.'.format(processor))
             return
 
 gen_patch()
