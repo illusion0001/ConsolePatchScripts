@@ -14,6 +14,12 @@
 
 from binascii import hexlify
 
+def getdata(codeUnit):
+    address        = str(codeUnit.getAddress())
+    value          = str(hexlify(codeUnit.getBytes()))
+    oprand_comment = str(codeUnit.toString())
+    return address, value, oprand_comment
+
 def gen_patch():
         # https://github.com/lwerdna/ghidra/blob/master/XorMemoryScript.py
         if currentSelection is None or currentSelection.isEmpty():
@@ -27,16 +33,20 @@ def gen_patch():
         minAddr   = str(currentProgram.getMinAddress())
         codeUnits = listing.getCodeUnits(addrSet, True)
 
-        if processor.startswith('PowerPC:BE:64:64-32addr') or ('PowerPC:BE:64:A2-32addr'): # PS3
+        if processor.startswith('PowerPC:BE:64:64-32addr' or 'PowerPC:BE:64:A2-32addr'): # PS3
             print('Platform is PS3.')
             for codeUnit in codeUnits:
-                print('- [ be32, 0x{0}, 0x{1} ] # {2}'.format(codeUnit.getAddress(), hexlify(codeUnit.getBytes()), codeUnit.toString()))
+                getdata(codeUnit)
+                addr, val, oprand = getdata(codeUnit)
+                print('- [ be32, 0x{0}, 0x{1} ] # {2}'.format(addr, val, oprand))
         elif processor.startswith('PowerPC:BE:64:VLE-32addr'): # X360
             print('Platform is Xbox 360.')
             for codeUnit in codeUnits:
+                getdata(codeUnit)
+                addr, val, oprand = getdata(codeUnit)
                 print('    [[patch.be32]]\n'
                       '        address = 0x{0}\n'
-                      '        value = 0x{1} # {2}'.format(codeUnit.getAddress(), hexlify(codeUnit.getBytes()), codeUnit.toString()))
+                      '        value = 0x{1} # {2}'.format(addr, val, oprand))
         elif processor.startswith('x86:LE:64:default'):
             if minAddr.startswith('00400000'):
                 # use 0x400000 (disabled aslr) addr for now
@@ -44,7 +54,9 @@ def gen_patch():
                 print('Image Base {} is correct.'.format(minAddr))
                 print('Platform is PS4.')
                 for codeUnit in codeUnits:
-                    print('- [ bytes, 0x{0}, \"{1:<20}\" ] # {2}'.format(codeUnit.getAddress(), hexlify(codeUnit.getBytes()), codeUnit.toString()))
+                    getdata(codeUnit)
+                    addr, val, oprand = getdata(codeUnit)
+                    print('- [ bytes, 0x{0}, \"{1:<20}\" ] # {2}'.format(addr, val, oprand))
                     # align to left with spaces if less than 20 chars
             else:
                 print('Image Base {} is not correct, patch address will be wrong! Make sure it is set to 0x400000.\nExiting script.'.format(minAddr))
