@@ -11,6 +11,7 @@ Scripts for creating Game Patches from reverse engineering tools.
 
 ## Usage
 - Download the [extension](https://github.com/illusion0001/ConsolePatchScripts/releases/latest), install it and enable the script.
+- The script can also be installed manually by adding the `ghidra_scripts` to directory list.
 - Highlight your desired code and press `Alt-Shift-Q` to generate code.
 
 ![](https://user-images.githubusercontent.com/37698908/159830228-7063bf0f-d0b7-457c-81a1-6f717a975913.png)
