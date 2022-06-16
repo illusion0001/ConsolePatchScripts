@@ -14,9 +14,13 @@
 
 from binascii import hexlify
 
+def swapbytes(int_tuple):
+    swapped = int_tuple[::-1]
+    return swapped
+
 def getdata(codeUnit):
     address        = (codeUnit.getAddress())
-    value          = (hexlify(codeUnit.getBytes()))
+    value          = (codeUnit.getBytes())
     oprand_comment = (codeUnit.toString())
     return address, value, oprand_comment
 
@@ -36,13 +40,22 @@ def gen_patch():
         addrSet   = currentSelection
         minAddr   = str(currentProgram.getMinAddress())
         codeUnits = listing.getCodeUnits(addrSet, True)
-
-        if processor == 'PowerPC:BE:64:64-32addr' or processor == 'PowerPC:BE:64:A2-32addr': # PS3
+        if processor == 'ARM:LE:32:v7': # PSP2
+            print('Platform is PS Vita ({0}).'.format(processor))
+            for codeUnit in codeUnits:
+                addr, val, oprand = getdata(codeUnit)
+                bytes = len(val)
+                if (bytes == 2):
+                  type = 'bytes16'
+                elif (bytes == 4):
+                  type = 'bytes32'
+                print('- [ {2}, 0x{0}, 0x{1} ]'.format(addr, hexlify(swapbytes(val)), type))
+        elif processor == 'PowerPC:BE:64:64-32addr' or processor == 'PowerPC:BE:64:A2-32addr': # PS3
             print('Platform is PS3 ({0}).'.format(processor))
             for codeUnit in codeUnits:
                 getdata(codeUnit)
                 addr, val, oprand = getdata(codeUnit)
-                print('- [ be32, 0x{0}, 0x{1} ] # {2}'.format(addr, val, oprand))
+                print('- [ be32, 0x{0}, 0x{1} ] # {2}'.format(addr, hexlify(val), oprand))
         elif processor == 'PowerPC:BE:64:VLE-32addr': # X360
             print('Platform is Xbox 360 ({0}).'.format(processor))
             for codeUnit in codeUnits:
@@ -50,7 +63,7 @@ def gen_patch():
                 addr, val, oprand = getdata(codeUnit)
                 print('    [[patch.be32]]\n'
                       '        address = 0x{0}\n'
-                      '        value = 0x{1} # {2}'.format(addr, val, oprand))
+                      '        value = 0x{1} # {2}'.format(addr, hexlify(val), oprand))
         elif processor == 'x86:LE:64:default':
             if minAddr == '00400000':
                 # use 0x400000 (disabled aslr) addr for now
@@ -62,7 +75,7 @@ def gen_patch():
                 for codeUnit in codeUnits:
                     getdata(codeUnit)
                     addr, val, oprand = getdata(codeUnit)
-                    patch = '- [ bytes, 0x{0}, \"{1}\" ]'.format(addr, val) # thanks aero+kiwi
+                    patch = '- [ bytes, 0x{0}, \"{1}\" ]'.format(addr, hexlify(val)) # thanks aero+kiwi
                     patch_list.append(patch)
                     oprand_list.append(oprand)
                 length = (get_max_str(patch_list))
