@@ -1,5 +1,5 @@
 #Generate codes for console patches.
-#Supported platform and formats: PS3 (RPCS3 Game Patches), PS4 (py-patch), Xbox 360 (Xenia Game Patches)
+#Supported platform and formats: PS3 (RPCS3 Game Patches), PS4 (py-patch), Xbox 360 (Xenia Game Patches), PSP (PPSSPP and CWCheat), PS Vita
 #Note that PS4 must have the address base set to 0x400000, to match disabled ASLR address.
 #Usage:
 #Check the tickbox for the script
@@ -19,7 +19,7 @@ def swapbytes(int_tuple):
     return swapped
 
 def getdata(codeUnit):
-    address        = (codeUnit.getAddress())
+    address        = str(codeUnit.getAddress())
     value          = (codeUnit.getBytes())
     oprand_comment = (codeUnit.toString())
     return address, value, oprand_comment
@@ -40,7 +40,17 @@ def gen_patch():
         addrSet   = currentSelection
         minAddr   = str(currentProgram.getMinAddress())
         codeUnits = listing.getCodeUnits(addrSet, True)
-        if processor == 'ARM:LE:32:v7': # PSP2
+        comments = False
+        if processor == 'Allegrex:LE:32:default': # PSP
+            print('Platform is PSP ({0}).'.format(processor))
+            for codeUnit in codeUnits:
+                addr, val, oprand = getdata(codeUnit)
+                value = hexlify(swapbytes(val))
+                if(comments == False):
+                  print('_L 0x{0} 0x{1}'.format(addr.upper(), value.upper())) # CW uses uppercase
+                else:
+                  print('_L 0x{0} 0x{1} // {2}'.format(addr.upper(), value.upper(), oprand)) # CW uses uppercase
+        elif processor == 'ARM:LE:32:v7': # PSP2
             print('Platform is PS Vita ({0}).'.format(processor))
             for codeUnit in codeUnits:
                 addr, val, oprand = getdata(codeUnit)
@@ -49,21 +59,32 @@ def gen_patch():
                   type = 'bytes16'
                 elif (bytes == 4):
                   type = 'bytes32'
-                print('- [ {2}, 0x{0}, 0x{1} ]'.format(addr, hexlify(swapbytes(val)), type))
+                if(comments == False):
+                  print('- [ {2}, 0x{0}, 0x{1} ]'.format(addr, hexlify(swapbytes(val)), type))
+                else:
+                  print('- [ {2}, 0x{0}, 0x{1} ] # {3}'.format(addr, hexlify(swapbytes(val)), type, oprand))
         elif processor == 'PowerPC:BE:64:64-32addr' or processor == 'PowerPC:BE:64:A2-32addr': # PS3
             print('Platform is PS3 ({0}).'.format(processor))
             for codeUnit in codeUnits:
                 getdata(codeUnit)
                 addr, val, oprand = getdata(codeUnit)
-                print('- [ be32, 0x{0}, 0x{1} ] # {2}'.format(addr, hexlify(val), oprand))
+                if(comments == False):
+                  print('- [ be32, 0x{0}, 0x{1} ]'.format(addr, hexlify(val)))
+                else:
+                  print('- [ be32, 0x{0}, 0x{1} ] # {2}'.format(addr, hexlify(val), oprand))
         elif processor == 'PowerPC:BE:64:VLE-32addr': # X360
             print('Platform is Xbox 360 ({0}).'.format(processor))
             for codeUnit in codeUnits:
                 getdata(codeUnit)
                 addr, val, oprand = getdata(codeUnit)
-                print('    [[patch.be32]]\n'
-                      '        address = 0x{0}\n'
-                      '        value = 0x{1} # {2}'.format(addr, hexlify(val), oprand))
+                if(comments == False):
+                  print('    [[patch.be32]]\n'
+                        '        address = 0x{0}\n'
+                        '        value = 0x{1}'.format(addr, hexlify(val)))
+                else:
+                  print('    [[patch.be32]]\n'
+                        '        address = 0x{0}\n'
+                        '        value = 0x{1} # {2}'.format(addr, hexlify(val)))
         elif processor == 'x86:LE:64:default':
             if minAddr == '00400000':
                 # use 0x400000 (disabled aslr) addr for now
@@ -81,7 +102,10 @@ def gen_patch():
                 length = (get_max_str(patch_list))
                 real_length = (len(length))
                 for patch, oprand in zip(patch_list, oprand_list):
-                    print('{0:<{2}} # {1}'.format(patch, oprand, real_length))
+                    if(comments == False):
+                      print('{0}'.format(patch, oprand))
+                    else:
+                      print('{0:<{2}} # {1}'.format(patch, oprand, real_length))
             else:
                 print('Image Base {} is not correct, patch address will be wrong! Make sure it is set to 0x400000.\nExiting script.'.format(minAddr))
                 return
