@@ -1,4 +1,4 @@
-#Generate codes for console patches.
+#Generate codes for console patches. (With Code Comments)
 #Supported platform and formats: PS3 (RPCS3 Game Patches), PS4 (py-patch), Xbox 360 (Xenia Game Patches), PSP (PPSSPP and CWCheat), PS Vita
 #Note that PS4 must have the address base set to 0x400000, to match disabled ASLR address.
 #Usage:
@@ -8,7 +8,7 @@
 
 #@author illusion0001
 #@category Conversion
-#@keybinding Alt-Shift-Q
+#@keybinding Alt-Shift-W
 #@menupath
 #@toolbar
 
@@ -31,7 +31,7 @@ def get_max_str(lst):
 def gen_patch():
         # https://github.com/lwerdna/ghidra/blob/master/XorMemoryScript.py
         if currentSelection is None or currentSelection.isEmpty():
-            print("Use your mouse to highlight data to generation patch. then press Alt-Shift-Q to generate code.")
+            print("Use your mouse to highlight data to generation patch. then press Alt-Shift-W to generate code.")
             return # exit
                    # else
         # https://github.com/HackOvert/GhidraSnippets#print-all-instructions-in-a-select-function
@@ -40,7 +40,7 @@ def gen_patch():
         addrSet   = currentSelection
         minAddr   = str(currentProgram.getMinAddress())
         codeUnits = listing.getCodeUnits(addrSet, True)
-        comments = False
+        comments = True
         if processor == 'Allegrex:LE:32:default': # PSP
             # print('Platform is PSP ({0}).'.format(processor))
             for codeUnit in codeUnits:
