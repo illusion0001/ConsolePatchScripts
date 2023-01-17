@@ -92,7 +92,8 @@ def gen_patch():
                 for codeUnit in codeUnits:
                     getdata(codeUnit)
                     addr, val, oprand = getdata(codeUnit)
-                    patch = '{ \"type\": \"bytes\", \"addr\": \"0x%s\", "value": \"%s\" },' % (addr, hexlify(val)) # thanks aero+kiwi
+                    # <Line Type="bytes" Address="0x0050bef0" Value="31c0"/>
+                    patch = '<Line Type=\"bytes\" Address=\"0x%s\" Value=\"%s\"/>' % (addr, hexlify(val)) # thanks aero+kiwi
                     #patch = '- [ bytes, 0x{0}, \"{1}\" ]'.format(addr, hexlify(val)) # thanks aero+kiwi
                     patch_list.append(patch)
                     oprand_list.append(oprand)
