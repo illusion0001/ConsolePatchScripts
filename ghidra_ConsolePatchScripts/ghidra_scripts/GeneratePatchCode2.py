@@ -93,7 +93,8 @@ def gen_patch():
                     getdata(codeUnit)
                     addr, val, oprand = getdata(codeUnit)
                     #patch = '{ \"type\": \"bytes\", \"addr\": \"0x%s\", "value": \"%s\" },' % (addr, hexlify(val)) # thanks aero+kiwi
-                    patch = '- [ bytes, 0x{0}, \"{1}\" ]'.format(addr, hexlify(val)) # thanks aero+kiwi
+                    #patch = '- [ bytes, 0x{0}, \"{1}\" ]'.format(addr, hexlify(val)) # thanks aero+kiwi
+                    patch = '<Line Type=\"bytes\" Address=\"0x%s\" Value=\"%s\"/>' % (addr, hexlify(val)) # thanks aero+kiwi
                     patch_list.append(patch)
                     oprand_list.append(oprand)
                 length = (get_max_str(patch_list))
@@ -102,10 +103,10 @@ def gen_patch():
                     if(comments == False):
                       print('{0}'.format(patch, oprand))
                     else:
-                      #new_string = ('{0:<{1}} '.format(patch, real_length))
+                      new_string = ('{0} <!-- {1} -->'.format(patch, oprand))
                       #new_string += ('{ \"comment\": \"%s\" },' % (oprand))
                       #print('\'' + oprand + '\\n\'')
-                      print(oprand)
+                      print(new_string)
             else:
                 print('Image Base {} is not correct, patch address will be wrong! Make sure it is set to 0x400000.\nExiting script.'.format(minAddr))
                 return
