@@ -86,14 +86,28 @@ def gen_patch():
                         '        address = 0x{0}\n'
                         '        value = 0x{1} # {2}'.format(addr, hexlify(val)))
         elif processor == 'x86:LE:64:default':
-            if minAddr == '00400000':
+            if True:
                 patch_list  = []
                 oprand_list = []
                 for codeUnit in codeUnits:
                     getdata(codeUnit)
                     addr, val, oprand = getdata(codeUnit)
                     # <Line Type="bytes" Address="0x0050bef0" Value="31c0"/>
-                    patch = '<Line Type=\"bytes\" Address=\"0x%s\" Value=\"%s\"/>' % (addr, hexlify(val)) # thanks aero+kiwi
+                    if minAddr == '00400000':
+                        if hexlify(val) == '48050df0a70c':
+                            patch = 'write_bytes(app_pid, NO_ASLR(0x%s), \"%s\", isOffsetVideoModeSupported);' % (addr, hexlify(val))
+                        elif hexlify(val) == '48050df0ed5e':
+                            patch = 'write_bytes(app_pid, NO_ASLR(0x%s), \"%s\", isOffsetConfigureOutput);' % (addr, hexlify(val))
+                        else: 
+                            patch = 'write_bytes(app_pid, NO_ASLR(0x%s), \"%s\");' % (addr, hexlify(val))
+                    else:
+                        if hexlify(val) == '48050df0a70c':
+                            patch = 'write_bytes(app_pid, BASE_ASLR_OFFSET(0x%s, 0x%s), isOffsetVideoModeSupported);' % (minAddr, addr, hexlify(val))
+                        elif hexlify(val) == '48050df0ed5e':
+                            patch = 'write_bytes(app_pid, BASE_ASLR_OFFSET(0x%s, 0x%s), isOffsetConfigureOutput);' % (minAddr, addr, hexlify(val))
+                        else:
+                            patch = 'write_bytes(app_pid, BASE_ASLR_OFFSET(0x%s, 0x%s), \"%s\");' % (minAddr, addr, hexlify(val))
+                    #patch = '<Line Type=\"bytes\" Address=\"0x%s\" Value=\"%s\"/>' % (addr, hexlify(val))
                     #patch = '- [ bytes, 0x{0}, \"{1}\" ]'.format(addr, hexlify(val)) # thanks aero+kiwi
                     patch_list.append(patch)
                     oprand_list.append(oprand)
